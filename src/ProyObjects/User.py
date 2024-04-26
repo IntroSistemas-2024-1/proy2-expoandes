@@ -13,6 +13,8 @@ import AnswerLog
 
 class User:
     
+    # constructor
+    
     def __init__( this, usernameU, passwordU ):
         """Nuevo User para la base de datos
 
@@ -25,6 +27,8 @@ class User:
         this.password = passwordU
         this.answerLog = AnswerLog( usernameU )
 
+    # metodos
+
     def newQuestionSet( this, questions ):
         """Agrega un nuevo set de preguntas al usuario
 
@@ -33,6 +37,23 @@ class User:
             questionsU (dict): preguntas -> { int: str } = { 1:'q1', 2:'q2', ... , n:'qn' }
         """
         this.answerLog.newQuestionSet( questions )
+        
+    def updateQuestion( this, questionID, newQuestion, requiresNewAnswer ):
+        """Actualiza el contenido de una pregunta.
+        Si la pregunta no existe, no hace nada.
+        Si questionID = n+1 -> agrega una nueva pregunta
+
+        Args:
+            this (User): this object
+            questionID (int): numero de la pregunta
+            newAnswer (str): nueva respuesta
+            requiresNewAnswer (bool): determina si se necesita una nueva respuesta o no
+        """
+        questionSet = this.answerLog.questions
+        lastQuestionID = questionSet.keys()[-1]
+        
+        if (questionID in questionSet) or (questionID == lastQuestionID+1):
+            this.answerLog.updateQuestion( questionID, newQuestion, requiresNewAnswer )
         
     def newAnswerSet( this, answers ):
         """Agrega un nuevo set de respuestas al usuario
@@ -43,18 +64,18 @@ class User:
         """
         this.answerLog.newAnswerSet( answers )
         
-    def updateAnswer( this, answerID, newAnswer ):
+    def updateAnswer( this, questionID, newAnswer ):
         """Actualiza la respuesta de un usuario a una pregunta específica.
         Si la pregunta no existe, no hace nada.
 
         Args:
             this (User): this object
-            answerID (int): numero de la pregunta
+            questionID (int): numero de la pregunta
             newAnswer (str): nueva respuesta
         """
         answerSet = this.answerLog.answers
         
-        if answerID in answerSet:
-            this.answerLog.updateAnswer( answeID, newAnswer )
+        if questionID in answerSet:
+            this.answerLog.updateAnswer( questionID, newAnswer )
             
         

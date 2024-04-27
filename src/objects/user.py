@@ -2,11 +2,14 @@
 # User (class) - Proy2 Expoandes: IntroISIS 2024-10
 #################################################################
 
+from src import config as cf
 
 #################################################################
 # imports
 
-import AnswerLog
+from src.objects.answerLog import AnswerLog
+
+assert cf
 
 #################################################################
 # class definition

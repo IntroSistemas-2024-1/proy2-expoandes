@@ -6,9 +6,8 @@
 #################################################################
 # imports
 
-
-from ProyObjects import User
-from ProyObjects import AnswerLog
+from .ProyObjects import User
+from .ProyObjects import AnswerLog
 
 import pandas as pd
 from pandas import DataFrame as df

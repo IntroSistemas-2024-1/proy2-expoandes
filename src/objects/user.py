@@ -39,7 +39,7 @@ class User:
             this (User): this object
             questionsU (dict): preguntas -> { int: str } = { 1:'q1', 2:'q2', ... , n:'qn' }
         """
-        self.answerLog.newQuestionSet( questions )
+        self.answerLog.newQuestionSet( questions, {} )
         
     def updateQuestion( self, questionID, newQuestion, requiresNewAnswer ):
         """Actualiza el contenido de una pregunta.

@@ -1,0 +1,212 @@
+import json
+import os
+import tkinter as tk
+from tkinter import messagebox, simpledialog, ttk
+import matplotlib.pyplot as plt
+
+# Nombre del archivo JSON
+DATA_FILE = 'data.json'
+
+# Datos iniciales
+data = {
+    "usuarios": [
+        {"username": "profesor1", "password": "pass1", "rol": "profesor"},
+        {"username": "estudiante1", "password": "pass2", "rol": "estudiante"}
+    ],
+    "preguntas": []
+}
+
+# Crear el archivo JSON si no existe
+if not os.path.exists(DATA_FILE):
+    with open(DATA_FILE, 'w') as f:
+        json.dump(data, f)
+
+def cargar_datos():
+    with open(DATA_FILE, 'r') as f:
+        return json.load(f)
+
+def guardar_datos(data):
+    with open(DATA_FILE, 'w') as f:
+        json.dump(data, f)
+
+def iniciar_sesion():
+    usuario = simpledialog.askstring("Iniciar Sesión", "Usuario:")
+    contraseña = simpledialog.askstring("Iniciar Sesión", "Contraseña:", show='*')
+    data = cargar_datos()
+    for user in data["usuarios"]:
+        if user["username"] == usuario and user["password"] == contraseña:
+            return user
+    messagebox.showerror("Error", "Credenciales inválidas")
+    return None
+
+def registrar_usuario():
+    data = cargar_datos()
+    usuario = simpledialog.askstring("Registrar", "Nuevo usuario:")
+    contraseña = simpledialog.askstring("Registrar", "Nueva contraseña:", show='*')
+    rol = simpledialog.askstring("Registrar", "Rol (profesor/estudiante):")
+    if rol not in ["profesor", "estudiante"]:
+        messagebox.showerror("Error", "Rol inválido")
+        return
+    for user in data["usuarios"]:
+        if user["username"] == usuario:
+            messagebox.showerror("Error", "El nombre de usuario ya existe")
+            return
+    data["usuarios"].append({"username": usuario, "password": contraseña, "rol": rol})
+    guardar_datos(data)
+    messagebox.showinfo("Éxito", "Usuario registrado con éxito")
+
+def crear_pregunta(menu):
+    data = cargar_datos()
+    tipo = simpledialog.askstring("Crear Pregunta", "Tipo de pregunta (1. Verdadero/Falso, 2. Escala del 1 al 5):")
+    if tipo not in ["1", "2"]:
+        messagebox.showerror("Error", "Tipo de pregunta inválido")
+        return
+    pregunta = simpledialog.askstring("Crear Pregunta", "Ingrese la pregunta:")
+    if tipo == "1":
+        data["preguntas"].append({"tipo": "verdadero_falso", "pregunta": pregunta, "respuestas": []})
+    elif tipo == "2":
+        data["preguntas"].append({"tipo": "escala", "pregunta": pregunta, "respuestas": []})
+    guardar_datos(data)
+    messagebox.showinfo("Éxito", "Pregunta creada")
+    menu.lift()
+
+def ver_preguntas():
+    data = cargar_datos()
+    preguntas = "\n".join([f"{idx + 1}. ({q['tipo']}) {q['pregunta']}" for idx, q in enumerate(data["preguntas"])])
+    messagebox.showinfo("Ver Preguntas", preguntas)
+
+def actualizar_pregunta(menu):
+    ver_preguntas()
+    data = cargar_datos()
+    idx = int(simpledialog.askstring("Actualizar Pregunta", "Ingrese el número de la pregunta a actualizar:")) - 1
+    if 0 <= idx < len(data["preguntas"]):
+        nueva_pregunta = simpledialog.askstring("Actualizar Pregunta", "Ingrese la nueva pregunta:")
+        data["preguntas"][idx]["pregunta"] = nueva_pregunta
+        guardar_datos(data)
+        messagebox.showinfo("Éxito", "Pregunta actualizada")
+    else:
+        messagebox.showerror("Error", "Número de pregunta inválido")
+    menu.lift()
+
+def eliminar_pregunta(menu):
+    ver_preguntas()
+    data = cargar_datos()
+    idx = int(simpledialog.askstring("Eliminar Pregunta", "Ingrese el número de la pregunta a eliminar:")) - 1
+    if 0 <= idx < len(data["preguntas"]):
+        data["preguntas"].pop(idx)
+        guardar_datos(data)
+        messagebox.showinfo("Éxito", "Pregunta eliminada")
+    else:
+        messagebox.showerror("Error", "Número de pregunta inválido")
+    menu.lift()
+
+def responder_pregunta(menu):
+    ver_preguntas()
+    data = cargar_datos()
+    idx = int(simpledialog.askstring("Responder Pregunta", "Ingrese el número de la pregunta a responder:")) - 1
+    if 0 <= idx < len(data["preguntas"]):
+        pregunta = data["preguntas"][idx]
+        if pregunta["tipo"] == "verdadero_falso":
+            respuesta = simpledialog.askstring("Responder Pregunta", "Ingrese su respuesta (verdadero/falso):").lower()
+            if respuesta not in ["verdadero", "falso"]:
+                messagebox.showerror("Error", "Respuesta inválida")
+                return
+        elif pregunta["tipo"] == "escala":
+            respuesta = simpledialog.askstring("Responder Pregunta", "Ingrese su respuesta (1-5):")
+            if respuesta not in ["1", "2", "3", "4", "5"]:
+                messagebox.showerror("Error", "Respuesta inválida")
+                return
+        pregunta["respuestas"].append(respuesta)
+        guardar_datos(data)
+        messagebox.showinfo("Éxito", "Respuesta enviada")
+    else:
+        messagebox.showerror("Error", "Número de pregunta inválido")
+    menu.lift()
+
+def ver_respuestas(menu):
+    ver_preguntas()
+    data = cargar_datos()
+    idx = int(simpledialog.askstring("Ver Respuestas", "Ingrese el número de la pregunta para ver respuestas:")) - 1
+    if 0 <= idx < len(data["preguntas"]):
+        pregunta = data["preguntas"][idx]
+        respuestas = "\n".join(pregunta["respuestas"])
+        messagebox.showinfo("Respuestas", f"Respuestas para la pregunta '{pregunta['pregunta']}':\n{respuestas}")
+    else:
+        messagebox.showerror("Error", "Número de pregunta inválido")
+    menu.lift()
+
+def analizar_respuestas(menu):
+    ver_preguntas()
+    data = cargar_datos()
+    idx = int(simpledialog.askstring("Analizar Respuestas", "Ingrese el número de la pregunta para analizar respuestas:")) - 1
+    if 0 <= idx < len(data["preguntas"]):
+        pregunta = data["preguntas"][idx]
+        if pregunta["tipo"] == "verdadero_falso":
+            true_count = pregunta["respuestas"].count("verdadero")
+            false_count = pregunta["respuestas"].count("falso")
+            plt.bar(['Verdadero', 'Falso'], [true_count, false_count], color=['green', 'red'])
+            plt.xlabel('Respuestas')
+            plt.ylabel('Cantidad')
+            plt.title('Análisis de respuestas (Verdadero/Falso)')
+            plt.show()
+        elif pregunta["tipo"] == "escala":
+            escala_counts = {str(i): pregunta["respuestas"].count(str(i)) for i in range(1, 6)}
+            plt.bar(escala_counts.keys(), escala_counts.values(), color='blue')
+            plt.xlabel('Respuestas')
+            plt.ylabel('Cantidad')
+            plt.title('Análisis de respuestas (Escala 1-5)')
+            plt.show()
+    else:
+        messagebox.showerror("Error", "Número de pregunta inválido")
+    menu.lift()
+
+def menu_profesor():
+    menu = tk.Toplevel()
+    menu.title("Menú Profesor")
+    menu.geometry("400x400")
+    style = ttk.Style()
+    style.configure("TButton", padding=6, relief="flat", background="#ccc")
+
+    ttk.Button(menu, text="Crear Pregunta", command=lambda: crear_pregunta(menu)).pack(fill=tk.X, pady=5)
+    ttk.Button(menu, text="Ver Preguntas", command=ver_preguntas).pack(fill=tk.X, pady=5)
+    ttk.Button(menu, text="Actualizar Pregunta", command=lambda: actualizar_pregunta(menu)).pack(fill=tk.X, pady=5)
+    ttk.Button(menu, text="Eliminar Pregunta", command=lambda: eliminar_pregunta(menu)).pack(fill=tk.X, pady=5)
+    ttk.Button(menu, text="Ver Respuestas", command=lambda: ver_respuestas(menu)).pack(fill=tk.X, pady=5)
+    ttk.Button(menu, text="Analizar Respuestas", command=lambda: analizar_respuestas(menu)).pack(fill=tk.X, pady=5)
+    ttk.Button(menu, text="Cerrar Sesión", command=menu.destroy).pack(fill=tk.X, pady=5)
+
+
+def menu_estudiante():
+    menu = tk.Toplevel()
+    menu.title("Menú Estudiante")
+    menu.geometry("400x200")
+    style = ttk.Style()
+    style.configure("TButton", padding=6, relief="flat", background="#ccc")
+
+    ttk.Button(menu, text="Ver Preguntas", command=ver_preguntas).pack(fill=tk.X, pady=5)
+    ttk.Button(menu, text="Responder Pregunta", command=lambda: responder_pregunta(menu)).pack(fill=tk.X, pady=5)
+    ttk.Button(menu, text="Cerrar Sesión", command=menu.destroy).pack(fill=tk.X, pady=5)
+
+def iniciar_sesion_handler(root):
+    user = iniciar_sesion()
+    if user:
+        if user["rol"] == "profesor":
+            menu_profesor()
+        elif user["rol"] == "estudiante":
+            menu_estudiante()
+
+def main():
+    root = tk.Tk()
+    root.title("Sistema de Preguntas y Respuestas")
+    root.geometry("300x200")
+    style = ttk.Style()
+    style.configure("TButton", padding=6, relief="flat", background="#ccc")
+
+    ttk.Button(root, text="Iniciar Sesión", command=lambda: iniciar_sesion_handler(root)).pack(fill=tk.X, pady=5)
+    ttk.Button(root, text="Registrarse", command=registrar_usuario).pack(fill=tk.X, pady=5)
+    ttk.Button(root, text="Salir", command=root.destroy).pack(fill=tk.X, pady=5)
+
+    root.mainloop()
+
+if __name__ == "__main__":
+    main()

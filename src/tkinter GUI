@@ -164,7 +164,7 @@ def analizar_respuestas(menu):
             plt.show()
         elif pregunta["tipo"] == "escala":
             escala_counts = {str(i): pregunta["respuestas"].count(str(i)) for i in range(1, 6)}
-            plt.bar(escala_counts.keys(), escala_counts.values(), color='blue')
+            plt.bar(escala_counts.keys(), escala_counts.values(), color='green')
             plt.xlabel('Respuestas')
             plt.ylabel('Cantidad')
             plt.title('Análisis de respuestas (Escala 1-5)')

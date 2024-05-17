@@ -2,9 +2,6 @@
 # console (test_file) - Proy2 Expoandes: IntroISIS 2024-10
 #################################################################
 
-import datetime
-import time
-import csv
 import config as cf
 
 #################################################################
@@ -14,6 +11,9 @@ from src.objects.answerLog import AnswerLog
 from src.objects.user import User
 
 import pandas as pd
+import datetime
+import time
+import csv
 from pandas import DataFrame as df
 
 assert cf

@@ -11,15 +11,28 @@ DATA_FILE = 'data.json'
 data = {
     "usuarios": [
         {"username": "profesor1", "password": "pass1", "rol": "profesor"},
-        {"username": "estudiante1", "password": "pass2", "rol": "estudiante"}
+        {"username": "estudiante1", "password": "pass2", "rol": "estudiante"},
+        {"username": "estudiante2", "password": "pass3", "rol": "estudiante"},
+        {"username": "estudiante3", "password": "pass4", "rol": "estudiante"}
     ],
-    "preguntas": []
+    "preguntas": [
+        {
+            "tipo": "verdadero_falso",
+            "pregunta": "¿Estudias más de 2 horas al día?",
+            "respuestas": ["verdadero", "falso", "verdadero", "verdadero", "falso", "verdadero", "falso"]
+        },
+        {
+            "tipo": "escala",
+            "pregunta": "¿Cómo calificarías tu bienestar general del 1 al 5?",
+            "respuestas": ["4", "3", "5", "2", "4", "5", "3"]
+        }
+    ]
 }
 
 # Crear el archivo JSON si no existe
 if not os.path.exists(DATA_FILE):
     with open(DATA_FILE, 'w') as f:
-        json.dump(data, f)
+        json.dump(data, f, indent= 4)
 
 def cargar_datos():
     with open(DATA_FILE, 'r') as f:
@@ -27,7 +40,7 @@ def cargar_datos():
 
 def guardar_datos(data):
     with open(DATA_FILE, 'w') as f:
-        json.dump(data, f)
+        json.dump(data, f, indent= 4)
 
 def iniciar_sesion():
     usuario = simpledialog.askstring("Iniciar Sesión", "Usuario:")

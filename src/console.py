@@ -66,7 +66,7 @@ def save_user_details(user_type, username, hashed_password):
         with open(USER_DATA_FILE, 'r') as file:
             data = json.load(file)
     else:
-        data = {"students": {}, "profesors": {}, "subjects": {}}
+        data = {"students": {}, "profesors": {}, "log": {}}
 
     if user_type not in data:
         data[user_type] = {}

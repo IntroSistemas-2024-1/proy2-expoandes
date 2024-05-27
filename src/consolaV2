@@ -1,0 +1,242 @@
+# main.py
+import json
+import getpass
+import os
+import matplotlib.pyplot as plt
+
+# Nombre del archivo JSON
+DATA_FILE = 'data.json'
+
+# Datos iniciales
+data = {
+    "usuarios": [
+        {"username": "profesor1", "password": "pass1", "rol": "profesor"},
+        {"username": "estudiante1", "password": "pass2", "rol": "estudiante"}
+    ],
+    "preguntas": []
+}
+
+# Crear el archivo JSON si no existe
+if not os.path.exists(DATA_FILE):
+    with open(DATA_FILE, 'w') as f:
+        json.dump(data, f)
+
+def cargar_datos():
+    with open(DATA_FILE, 'r') as f:
+        return json.load(f)
+
+def guardar_datos(data):
+    with open(DATA_FILE, 'w') as f:
+        json.dump(data, f)
+
+def iniciar_sesion():
+    data = cargar_datos()
+    usuario = input("Usuario: ")
+    contraseña = getpass.getpass("Contraseña: ")
+    for user in data["usuarios"]:
+        if user["username"] == usuario and user["password"] == contraseña:
+            return user
+    print("Credenciales inválidas")
+    return None
+
+def registrar_usuario():
+    data = cargar_datos()
+    usuario = input("Nuevo usuario: ")
+    contraseña = getpass.getpass("Nueva contraseña: ")
+    rol = input("Rol (profesor/estudiante): ")
+    if rol not in ["profesor", "estudiante"]:
+        print("Rol inválido")
+        return
+    for user in data["usuarios"]:
+        if user["username"] == usuario:
+            print("El nombre de usuario ya existe")
+            return
+    data["usuarios"].append({"username": usuario, "password": contraseña, "rol": rol})
+    guardar_datos(data)
+    print("Usuario registrado con éxito")
+
+def menu_profesor():
+    while True:
+        print("\nMenú Profesor")
+        print("1. Crear Pregunta")
+        print("2. Ver Preguntas")
+        print("3. Actualizar Pregunta")
+        print("4. Eliminar Pregunta")
+        print("5. Ver Respuestas")
+        print("6. Analizar Respuestas")
+        print("7. Cerrar Sesión")
+        opcion = input("Elige una opción: ")
+
+        if opcion == "1":
+            crear_pregunta()
+        elif opcion == "2":
+            ver_preguntas()
+        elif opcion == "3":
+            actualizar_pregunta()
+        elif opcion == "4":
+            eliminar_pregunta()
+        elif opcion == "5":
+            ver_respuestas()
+        elif opcion == "6":
+            analizar_respuestas()
+        elif opcion == "7":
+            break
+        else:
+            print("Opción inválida")
+
+def menu_estudiante():
+    while True:
+        print("\nMenú Estudiante")
+        print("1. Ver Preguntas")
+        print("2. Responder Pregunta")
+        print("3. Cerrar Sesión")
+        opcion = input("Elige una opción: ")
+
+        if opcion == "1":
+            ver_preguntas()
+        elif opcion == "2":
+            responder_pregunta()
+        elif opcion == "3":
+            break
+        else:
+            print("Opción inválida")
+
+def crear_pregunta():
+    data = cargar_datos()
+    tipo = input("Tipo de pregunta (1. Verdadero/Falso, 2. Escala del 1 al 5): ")
+    if tipo not in ["1", "2"]:
+        print("Tipo de pregunta inválido")
+        return
+    
+    pregunta = input("Ingrese la pregunta: ")
+    if tipo == "1":
+        data["preguntas"].append({"tipo": "verdadero_falso", "pregunta": pregunta, "respuestas": []})
+    elif tipo == "2":
+        data["preguntas"].append({"tipo": "escala", "pregunta": pregunta, "respuestas": []})
+    
+    guardar_datos(data)
+    print("Pregunta creada")
+
+def ver_preguntas():
+    data = cargar_datos()
+    for idx, q in enumerate(data["preguntas"]):
+        print(f"{idx + 1}. ({q['tipo']}) {q['pregunta']}")
+
+def actualizar_pregunta():
+    data = cargar_datos()
+    ver_preguntas()
+    idx = int(input("Ingrese el número de la pregunta a actualizar: ")) - 1
+    if 0 <= idx < len(data["preguntas"]):
+        nueva_pregunta = input("Ingrese la nueva pregunta: ")
+        data["preguntas"][idx]["pregunta"] = nueva_pregunta
+        guardar_datos(data)
+        print("Pregunta actualizada")
+    else:
+        print("Número de pregunta inválido")
+
+def eliminar_pregunta():
+    data = cargar_datos()
+    ver_preguntas()
+    idx = int(input("Ingrese el número de la pregunta a eliminar: ")) - 1
+    if 0 <= idx < len(data["preguntas"]):
+        data["preguntas"].pop(idx)
+        guardar_datos(data)
+        print("Pregunta eliminada")
+    else:
+        print("Número de pregunta inválido")
+
+def responder_pregunta():
+    data = cargar_datos()
+    ver_preguntas()
+    idx = int(input("Ingrese el número de la pregunta a responder: ")) - 1
+    if 0 <= idx < len(data["preguntas"]):
+        pregunta = data["preguntas"][idx]
+        if pregunta["tipo"] == "verdadero_falso":
+            respuesta = input("Ingrese su respuesta (verdadero/falso): ").lower()
+            if respuesta not in ["verdadero", "falso"]:
+                print("Respuesta inválida")
+                return
+        elif pregunta["tipo"] == "escala":
+            respuesta = input("Ingrese su respuesta (1-5): ")
+            if respuesta not in ["1", "2", "3", "4", "5"]:
+                print("Respuesta inválida")
+                return
+        pregunta["respuestas"].append(respuesta)
+        guardar_datos(data)
+        print("Respuesta enviada")
+    else:
+        print("Número de pregunta inválido")
+
+def ver_respuestas():
+    data = cargar_datos()
+    ver_preguntas()
+    idx = int(input("Ingrese el número de la pregunta para ver respuestas: ")) - 1
+    if 0 <= idx < len(data["preguntas"]):
+        pregunta = data["preguntas"][idx]
+        print(f"Respuestas para la pregunta '{pregunta['pregunta']}':")
+        for resp in pregunta["respuestas"]:
+            print(resp)
+    else:
+        print("Número de pregunta inválido")
+
+def analizar_respuestas():
+    data = cargar_datos()
+    ver_preguntas()
+    idx = int(input("Ingrese el número de la pregunta para analizar respuestas: ")) - 1
+    if 0 <= idx < len(data["preguntas"]):
+        pregunta = data["preguntas"][idx]
+        if pregunta["tipo"] == "verdadero_falso":
+            true_count = pregunta["respuestas"].count("verdadero")
+            false_count = pregunta["respuestas"].count("falso")
+            print(f"Análisis de respuestas para '{pregunta['pregunta']}':")
+            print(f"Verdadero: {true_count}")
+            print(f"Falso: {false_count}")
+            # Crear gráfico de barras
+            labels = ['Verdadero', 'Falso']
+            counts = [true_count, false_count]
+            plt.bar(labels, counts, color=['green', 'red'])
+            plt.xlabel('Respuestas')
+            plt.ylabel('Cantidad')
+            plt.title('Análisis de respuestas (Verdadero/Falso)')
+            plt.show()
+        elif pregunta["tipo"] == "escala":
+            escala_counts = {str(i): pregunta["respuestas"].count(str(i)) for i in range(1, 6)}
+            print(f"Análisis de respuestas para '{pregunta['pregunta']}':")
+            for i in range(1, 6):
+                print(f"{i}: {escala_counts[str(i)]}")
+            # Crear gráfico de barras
+            labels = list(escala_counts.keys())
+            counts = list(escala_counts.values())
+            plt.bar(labels, counts, color='blue')
+            plt.xlabel('Respuestas')
+            plt.ylabel('Cantidad')
+            plt.title('Análisis de respuestas (Escala 1-5)')
+            plt.show()
+    else:
+        print("Número de pregunta inválido")
+
+def main():
+    while True:
+        print("\nBienvenido al Sistema de Preguntas y Respuestas")
+        print("1. Iniciar Sesión")
+        print("2. Registrarse")
+        print("3. Salir")
+        opcion = input("Elige una opción: ")
+
+        if opcion == "1":
+            user = iniciar_sesion()
+            if user:
+                if user["rol"] == "profesor":
+                    menu_profesor()
+                elif user["rol"] == "estudiante":
+                    menu_estudiante()
+        elif opcion == "2":
+            registrar_usuario()
+        elif opcion == "3":
+            break
+        else:
+            print("Opción inválida")
+
+if __name__ == "__main__":
+    main()
+
